@@ -8,7 +8,7 @@ import '../index';
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'viewer-360': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+      'viewer-360': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & React.ClassAttributes<HTMLElement> & {
         frame?: number;
         speed?: number;
         'rotation-direction'?: string;
@@ -136,7 +136,7 @@ export const Viewer360 = forwardRef<Viewer360ElementInterface, Viewer360ReactPro
     return (
       <viewer-360
         ref={setRef as unknown as React.Ref<HTMLElement>}
-        class={className}
+        className={className}
         style={style as React.CSSProperties}
         frame={frame}
         speed={speed}
