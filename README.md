@@ -18,7 +18,7 @@ A framework-agnostic 360° product viewer [Web Component](https://developer.mozi
 ## Installation
 
 ```bash
-npm install viewer-360
+npm install @usamakhangt4/viewer-360
 ```
 
 ---
@@ -29,10 +29,10 @@ npm install viewer-360
 
 ```html
 <!-- Auto-registers <viewer-360> as a side effect -->
-<script type="module" src="node_modules/viewer-360/dist/viewer-360.esm.js"></script>
+<script type="module" src="node_modules/@usamakhangt4/viewer-360/dist/viewer-360.esm.js"></script>
 
 <!-- Or via CDN -->
-<script type="module" src="https://unpkg.com/viewer-360/dist/viewer-360.esm.js"></script>
+<script type="module" src="https://unpkg.com/@usamakhangt4/viewer-360/dist/viewer-360.esm.js"></script>
 
 <viewer-360 id="my-viewer" style="width:100%;height:500px;"></viewer-360>
 
@@ -61,8 +61,8 @@ npm install viewer-360
 ### TypeScript
 
 ```ts
-import 'viewer-360';
-import type { Viewer360ElementInterface } from 'viewer-360';
+import '@usamakhangt4/viewer-360';
+import type { Viewer360ElementInterface } from '@usamakhangt4/viewer-360';
 
 const viewer = document.querySelector('viewer-360') as Viewer360ElementInterface;
 viewer.images = frames;
@@ -72,7 +72,7 @@ viewer.autoRotate = true;
 ### React
 
 ```tsx
-import { Viewer360 } from 'viewer-360/react';
+import { Viewer360 } from '@usamakhangt4/viewer-360/react';
 
 function ProductPage() {
   return (
@@ -98,7 +98,7 @@ function ProductPage() {
 
 ```vue
 <script setup lang="ts">
-import { Viewer360 } from 'viewer-360/vue';
+import { Viewer360 } from '@usamakhangt4/viewer-360/vue';
 const frames = ref<string[]>([...]);
 </script>
 
@@ -120,7 +120,7 @@ const frames = ref<string[]>([...]);
 Add the module to your `NgModule`:
 
 ```ts
-import { Viewer360Module } from 'viewer-360/angular';
+import { Viewer360Module } from '@usamakhangt4/viewer-360/angular';
 
 @NgModule({
   imports: [Viewer360Module],
@@ -213,7 +213,7 @@ All props can be set as HTML attributes (kebab-case strings) or JavaScript prope
 | `viewer360:error` | `{ message: string }` | Non-recoverable error (e.g. failed image load) |
 
 ```ts
-import type { Viewer360EventMap } from 'viewer-360';
+import type { Viewer360EventMap } from '@usamakhangt4/viewer-360';
 
 viewer.addEventListener('viewer360:framechange', (e) => {
   // e.detail is typed as { frame: number }

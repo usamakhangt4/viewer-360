@@ -1,5 +1,5 @@
 {
-  "name": "viewer-360",
+  "name": "@usamakhangt4/viewer-360",
   "version": "0.1.0",
   "description": "Framework-agnostic 360° product viewer Web Component with React, Vue 3, and Angular wrappers",
   "type": "module",
@@ -78,5 +78,8 @@
     "angular",
     "typescript"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
