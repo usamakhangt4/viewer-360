@@ -1,0 +1,82 @@
+{
+  "name": "viewer-360",
+  "version": "0.1.0",
+  "description": "Framework-agnostic 360° product viewer Web Component with React, Vue 3, and Angular wrappers",
+  "type": "module",
+  "main": "./dist/viewer-360.umd.cjs",
+  "module": "./dist/viewer-360.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/viewer-360.esm.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/viewer-360.umd.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.js"
+      }
+    },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue/index.d.ts",
+        "default": "./dist/vue/index.js"
+      }
+    },
+    "./angular": {
+      "types": "./src/angular/index.ts",
+      "default": "./src/angular/index.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src/angular",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rollup -c rollup.config.js && tsc -p tsconfig.declarations.json",
+    "dev": "rollup -c rollup.config.js --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/react": "^18.3.3",
+    "rollup": "^4.18.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=15.0.0",
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/core": { "optional": true },
+    "react": { "optional": true },
+    "react-dom": { "optional": true },
+    "vue": { "optional": true }
+  },
+  "keywords": [
+    "360",
+    "viewer",
+    "product-viewer",
+    "web-component",
+    "custom-element",
+    "react",
+    "vue",
+    "angular",
+    "typescript"
+  ],
+  "license": "MIT"
+}
