@@ -37,7 +37,9 @@
   "files": [
     "dist",
     "src/angular",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "scripts": {

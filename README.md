@@ -1,6 +1,12 @@
 # viewer-360
 
+[![npm](https://img.shields.io/npm/v/@usamakhangt4/viewer-360)](https://www.npmjs.com/package/@usamakhangt4/viewer-360)
+[![license](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+[![demo](https://img.shields.io/badge/demo-live-6c5ce7)](https://usamakhangt4.github.io/viewer-360/demo/)
+
 A framework-agnostic 360° product viewer [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) with first-class TypeScript support and ready-made wrappers for React, Vue 3, and Angular.
+
+**[Try the live playground →](https://usamakhangt4.github.io/viewer-360/demo/)**
 
 ## Features
 
@@ -297,4 +303,4 @@ Any browser that supports [Custom Elements v1](https://caniuse.com/?search=custo
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE) for details.
