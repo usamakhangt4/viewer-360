@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>viewer-360 — Playground</title>
+  <script type="module" src="../dist/viewer-360.esm.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #6c5ce7;
+      --accent-dark: #5a4bd1;
+      --surface: #ffffff;
+      --surface-2: #f7f7fb;
+      --border: #e5e5ea;
+      --text: #1a1a2e;
+      --muted: #6b6b80;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface-2);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: .03em;
+    }
+
+    .header-links { display: flex; gap: 16px; align-items: center; }
+
+    .header-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color .15s;
+    }
+    .header-links a:hover { color: var(--text); }
+
+    /* ── Layout ──────────────────────────────────────────────────────────────── */
+    main {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 0;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* ── Left panel ──────────────────────────────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Empty state ─────────────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state svg { opacity: .25; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 15px; margin-bottom: 6px; color: var(--text); }
+    .empty-state p  { font-size: 13px; line-height: 1.6; }
+
+    /* ── Tabs ────────────────────────────────────────────────────────────────── */
+    .tabs { display: flex; border-bottom: 1px solid var(--border); }
+
+    .tab {
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    .tab-panel { display: none; padding: 14px; }
+    .tab-panel.active { display: block; }
+
+    /* ── Upload zone ─────────────────────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(108,92,231,.04);
+    }
+
+    .upload-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-zone p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    .upload-zone strong { font-size: 14px; color: var(--text); display: block; margin-bottom: 4px; }
+
+    .upload-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    /* ── URL textarea ────────────────────────────────────────────────────────── */
+    textarea {
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      resize: vertical;
+      min-height: 90px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+    textarea:focus { border-color: var(--accent); }
+
+    /* ── Buttons ─────────────────────────────────────────────────────────────── */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, opacity .15s;
+    }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #ebebf0; }
+
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Form rows ───────────────────────────────────────────────────────────── */
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .row label { width: 150px; flex-shrink: 0; color: var(--muted); }
+    .row input[type=range] { flex: 1; accent-color: var(--accent); }
+    .row .val { width: 38px; text-align: right; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .row select {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 3px 0;
+    }
+
+    .toggle-row label { color: var(--muted); cursor: pointer; }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(16px); }
+
+    /* ── Code snippet ────────────────────────────────────────────────────────── */
+    .code-block {
+      position: relative;
+      background: #1e1e2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .code-block pre {
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      line-height: 1.7;
+      color: #cdd6f4;
+      padding: 14px;
+      overflow-x: auto;
+      max-height: 180px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255,255,255,.1);
+      color: #cdd6f4;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.2); }
+
+    /* ── Right pane: viewer ──────────────────────────────────────────────────── */
+    .viewer-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .viewer-wrap {
+      width: 100%;
+      max-width: 680px;
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,.12);
+      background: #f5f5f5;
+    }
+
+    viewer-360 {
+      width: 100%;
+      height: 100%;
+      --viewer-color-accent: var(--accent);
+      --progress-bar-color: var(--accent);
+    }
+
+    .viewer-status {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── Frame count badge ───────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(108,92,231,.12);
+      color: var(--accent);
+    }
+
+    /* ── Divider ─────────────────────────────────────────────────────────────── */
+    .divider {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      position: relative;
+      margin: 2px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; height: auto; overflow: visible; }
+      .panel { border-right: none; border-bottom: 1px solid var(--border); max-height: none; }
+      .viewer-pane { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="https://github.com/usamakhangt4/viewer-360" target="_blank">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10" stroke="#6c5ce7"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+    </svg>
+    viewer-360
+    <span class="logo-badge">playground</span>
+  </a>
+  <div class="header-links">
+    <a href="https://github.com/usamakhangt4/viewer-360" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 24 12C24 5.37 18.63 0 12 0z"/></svg>
+      GitHub
+    </a>
+    <a href="https://www.npmjs.com/package/@usamakhangt4/viewer-360" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 0h24v24H0V0zm6.184 19.272V7.8h5.544v8.496h2.736V7.8h2.736v11.472H6.184z"/></svg>
+      npm
+    </a>
+  </div>
+</header>
+
+<main>
+  <!-- ── Left panel ── -->
+  <div class="panel">
+
+    <!-- Images input -->
+    <div class="section">
+      <div class="section-header">
+        Images
+        <span id="frameCountBadge" class="badge" style="display:none"></span>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="upload">Upload files</button>
+        <button class="tab" data-tab="urls">Paste URLs</button>
+      </div>
+
+      <!-- Upload tab -->
+      <div class="tab-panel active" id="tab-upload">
+        <span class="upload-label">Standard resolution frames (required)</span>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*" multiple>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <strong>Click to upload or drag &amp; drop</strong>
+          <p>PNG, JPG, WEBP — upload all frames in order</p>
+        </div>
+
+        <span class="upload-label" style="margin-top:12px">High-res frames (optional — shown when zoomed)</span>
+        <div class="upload-zone" id="uploadZoneHR">
+          <input type="file" id="fileInputHR" accept="image/*" multiple>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          <strong>Upload high-res counterparts</strong>
+          <p>Same number of frames as above</p>
+        </div>
+      </div>
+
+      <!-- URLs tab -->
+      <div class="tab-panel" id="tab-urls">
+        <span class="upload-label">Standard resolution URLs (one per line)</span>
+        <textarea id="urlInput" placeholder="https://example.com/frames/frame-001.jpg&#10;https://example.com/frames/frame-002.jpg&#10;..."></textarea>
+
+        <span class="upload-label" style="margin-top:4px">High-res URLs (optional, one per line)</span>
+        <textarea id="urlInputHR" placeholder="https://example.com/frames-hires/frame-001.jpg&#10;https://example.com/frames-hires/frame-002.jpg&#10;..." style="min-height:70px;"></textarea>
+
+        <button class="btn btn-primary" id="loadUrlsBtn" style="width:100%;margin-top:4px;">Load URLs</button>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="section">
+      <div class="section-header">Configuration</div>
+      <div class="section-body">
+
+        <div class="row">
+          <label>Speed (ms/frame)</label>
+          <input type="range" id="cfgSpeed" min="30" max="400" value="100">
+          <span class="val" id="cfgSpeedVal">100</span>
+        </div>
+
+        <div class="row">
+          <label>Direction</label>
+          <select id="cfgDir">
+            <option value="right" selected>Right →</option>
+            <option value="left">← Left</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>Initial frame</label>
+          <input type="range" id="cfgFrame" min="1" max="36" value="1">
+          <span class="val" id="cfgFrameVal">1</span>
+        </div>
+
+        <div class="row">
+          <label>DPR cap</label>
+          <select id="cfgDpr">
+            <option value="1">1×</option>
+            <option value="2" selected>2× (default)</option>
+            <option value="3">3×</option>
+          </select>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin:2px 0;"></div>
+
+        <div class="toggle-row">
+          <label for="cfgAutoRotate">Auto-rotate on load</label>
+          <label class="switch"><input type="checkbox" id="cfgAutoRotate"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label for="cfgControls">Show rotation controls</label>
+          <label class="switch"><input type="checkbox" id="cfgControls" checked><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label for="cfgZoomBtns">Show zoom buttons</label>
+          <label class="switch"><input type="checkbox" id="cfgZoomBtns" checked><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label for="cfgFullscreen">Show fullscreen button</label>
+          <label class="switch"><input type="checkbox" id="cfgFullscreen" checked><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <label for="cfgLoading">Show loading overlay</label>
+          <label class="switch"><input type="checkbox" id="cfgLoading" checked><span class="slider"></span></label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Code snippet -->
+    <div class="section">
+      <div class="section-header">Code snippet</div>
+      <div class="section-body" style="gap:8px;">
+        <p style="font-size:12px;color:var(--muted);">Copy this into your project:</p>
+        <div class="code-block">
+          <pre id="snippet"><!-- updated by JS --></pre>
+          <button class="copy-btn" id="copyBtn">Copy</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Right pane: viewer ── -->
+  <div class="viewer-pane">
+    <div class="viewer-wrap">
+      <viewer-360 id="viewer"></viewer-360>
+    </div>
+    <p class="viewer-status" id="viewerStatus">
+      Upload images or paste URLs on the left to get started.
+    </p>
+  </div>
+</main>
+
+<script type="module">
+  import '../dist/viewer-360.esm.js';
+
+  const viewer  = document.getElementById('viewer');
+  const status  = document.getElementById('viewerStatus');
+  const snippet = document.getElementById('snippet');
+  const badge   = document.getElementById('frameCountBadge');
+
+  let stdUrls  = [];
+  let hiUrls   = [];
+
+  // ── Tab switching ─────────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // ── File → object URL helper ─────────────────────────────────────────────────
+  function filesToUrls(files) {
+    return Array.from(files)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+      .map(f => URL.createObjectURL(f));
+  }
+
+  // ── Drag-over styling ─────────────────────────────────────────────────────────
+  ['uploadZone', 'uploadZoneHR'].forEach(id => {
+    const zone = document.getElementById(id);
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop',      e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+  });
+
+  // ── Upload: standard frames ───────────────────────────────────────────────────
+  document.getElementById('fileInput').addEventListener('change', e => {
+    if (!e.target.files.length) return;
+    stdUrls = filesToUrls(e.target.files);
+    applyImages();
+  });
+
+  // ── Upload: high-res frames ───────────────────────────────────────────────────
+  document.getElementById('fileInputHR').addEventListener('change', e => {
+    if (!e.target.files.length) return;
+    hiUrls = filesToUrls(e.target.files);
+    applyImages();
+  });
+
+  // ── URL load ─────────────────────────────────────────────────────────────────
+  document.getElementById('loadUrlsBtn').addEventListener('click', () => {
+    const parseLines = id => document.getElementById(id).value
+      .split('\n').map(l => l.trim()).filter(Boolean);
+    stdUrls = parseLines('urlInput');
+    hiUrls  = parseLines('urlInputHR');
+    applyImages();
+  });
+
+  // ── Apply images to viewer ────────────────────────────────────────────────────
+  function applyImages() {
+    if (!stdUrls.length) return;
+    viewer.images        = stdUrls;
+    viewer.highResImages = hiUrls.length ? hiUrls : [];
+    badge.textContent    = `${stdUrls.length} frames`;
+    badge.style.display  = 'inline-block';
+    status.textContent   = `${stdUrls.length} frame${stdUrls.length !== 1 ? 's' : ''} loaded${hiUrls.length ? ` + ${hiUrls.length} high-res` : ''} — drag to rotate · double-click to zoom`;
+    updateSnippet();
+  }
+
+  // ── Config controls ───────────────────────────────────────────────────────────
+  const bind = (id, prop, transform = v => v) => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', () => { viewer[prop] = transform(el.value); updateSnippet(); });
+    el.addEventListener('input',  () => { viewer[prop] = transform(el.value); });
+  };
+
+  const bindVal = (id, valId, prop, transform = v => v) => {
+    const el  = document.getElementById(id);
+    const val = document.getElementById(valId);
+    el.addEventListener('input', () => {
+      val.textContent = el.value;
+      viewer[prop]    = transform(el.value);
+      updateSnippet();
+    });
+  };
+
+  bindVal('cfgSpeed', 'cfgSpeedVal', 'speed', Number);
+
+  document.getElementById('cfgFrame').addEventListener('input', e => {
+    const max = viewer.images?.length || 36;
+    document.getElementById('cfgFrameVal').textContent = e.target.value;
+    viewer.showFrame(Number(e.target.value));
+    updateSnippet();
+  });
+
+  bind('cfgDir',      'rotationDirection');
+  bind('cfgDpr',      'dprCap',               Number);
+  bind('cfgAutoRotate','autoRotate',           el => el === 'true' || document.getElementById('cfgAutoRotate').checked);
+  bind('cfgControls', 'showControls',          () => document.getElementById('cfgControls').checked);
+  bind('cfgZoomBtns', 'showZoomButtons',       () => document.getElementById('cfgZoomBtns').checked);
+  bind('cfgFullscreen','showFullscreenButton', () => document.getElementById('cfgFullscreen').checked);
+  bind('cfgLoading',  'showLoadingOverlay',    () => document.getElementById('cfgLoading').checked);
+
+  // Toggle switches fire 'change', not 'input'
+  ['cfgAutoRotate','cfgControls','cfgZoomBtns','cfgFullscreen','cfgLoading'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      const el = document.getElementById(id);
+      const propMap = {
+        cfgAutoRotate: 'autoRotate',
+        cfgControls:   'showControls',
+        cfgZoomBtns:   'showZoomButtons',
+        cfgFullscreen: 'showFullscreenButton',
+        cfgLoading:    'showLoadingOverlay',
+      };
+      viewer[propMap[id]] = el.checked;
+      updateSnippet();
+    });
+  });
+
+  // ── Sync frame slider max to loaded frame count ───────────────────────────────
+  viewer.addEventListener('viewer360:ready', () => {
+    const slider = document.getElementById('cfgFrame');
+    slider.max   = viewer.images.length;
+  });
+
+  // ── Code snippet generator ────────────────────────────────────────────────────
+  function cfg() {
+    return {
+      frame:               parseInt(document.getElementById('cfgFrame').value, 10),
+      speed:               parseInt(document.getElementById('cfgSpeed').value, 10),
+      rotationDirection:   document.getElementById('cfgDir').value,
+      dprCap:              parseInt(document.getElementById('cfgDpr').value, 10),
+      autoRotate:          document.getElementById('cfgAutoRotate').checked,
+      showControls:        document.getElementById('cfgControls').checked,
+      showZoomButtons:     document.getElementById('cfgZoomBtns').checked,
+      showFullscreenButton:document.getElementById('cfgFullscreen').checked,
+      showLoadingOverlay:  document.getElementById('cfgLoading').checked,
+    };
+  }
+
+  function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function updateSnippet() {
+    const c = cfg();
+    const attrs = [
+      c.frame !== 1             ? `frame="${c.frame}"` : '',
+      c.autoRotate              ? 'auto-rotate' : '',
+      c.speed !== 100           ? `speed="${c.speed}"` : '',
+      c.rotationDirection !== 'right' ? `rotation-direction="${c.rotationDirection}"` : '',
+      c.dprCap !== 2            ? `dpr-cap="${c.dprCap}"` : '',
+      !c.showControls           ? 'show-controls="false"' : '',
+      !c.showZoomButtons        ? 'show-zoom-buttons="false"' : '',
+      !c.showFullscreenButton   ? 'show-fullscreen-button="false"' : '',
+      !c.showLoadingOverlay     ? 'show-loading-overlay="false"' : '',
+    ].filter(Boolean);
+
+    const attrStr = attrs.length ? '\n  ' + attrs.join('\n  ') : '';
+    const hasHi   = hiUrls.length > 0;
+    const urlNote = stdUrls.length
+      ? `/* ${stdUrls.length} frame URL${stdUrls.length > 1 ? 's' : ''} */`
+      : '/* your frame URLs */';
+
+    const code = [
+      `<script type="module">`,
+      `  import 'https://unpkg.com/@usamakhangt4/viewer-360';`,
+      `</scr` + `ipt>`,
+      ``,
+      `<viewer-360 id="v"${attrStr}`,
+      `  style="width:100%;height:500px;">`,
+      `</viewer-360>`,
+      ``,
+      `<script type="module">`,
+      `  const v = document.getElementById('v');`,
+      `  v.images = [ ${urlNote} ];`,
+      hasHi ? `  v.highResImages = [ /* high-res URLs */ ];` : '',
+      `</scr` + `ipt>`,
+    ].filter(s => s !== undefined && !(s === '' && !hasHi)).join('\n');
+
+    snippet.textContent = code;
+  }
+
+  updateSnippet();
+
+  // ── Copy button ───────────────────────────────────────────────────────────────
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(snippet.textContent).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1800);
+    });
+  });
+</script>
+
+</body>
+</html>

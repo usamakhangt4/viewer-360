@@ -201,19 +201,18 @@
   const TOTAL    = 32;
 
   // ── Frame URLs ───────────────────────────────────────────────────────────────
-  const BASE     = 'https://content.cylindo.com/api/v2/6843/products/Annecy%20Sofa';
-  const FEATURES = 'feature=FABRIC_COLOUR:FRENCHBLUE-STRIPE&feature=SOFA_SIZE:TWO%20SEATER';
+  // Populated via file upload or URL input below — starts empty.
+  let frames       = [];
+  let highResFrames = [];
 
-  // 720p — loaded eagerly for smooth rotation
-  const frames = Array.from({ length: TOTAL }, (_, i) =>
-    `${BASE}/frames/${i + 1}/Annecy%20Sofa.webp?size=1280&${FEATURES}`
-  );
-
-  // 4K — local files, loaded on-demand only for the current frame when zoomed in
-  const highResFrames = Array.from({ length: TOTAL }, (_, i) => {
-    const n = String(i + 1).padStart(3, '0');
-    return `./test-images/frame-${n}.webp`;
-  });
+  function loadFrames(stdUrls, hiUrls = []) {
+    frames        = stdUrls;
+    highResFrames = hiUrls;
+    viewer.images        = frames;
+    viewer.highResImages = highResFrames.length ? highResFrames : [];
+    viewer.frame  = 1;
+    status.textContent = `✓ Loaded ${frames.length} frames${hiUrls.length ? ' + high-res' : ''} — drag to rotate, double-click to zoom.`;
+  }
 
   // ── Wire up event log ─────────────────────────────────────────────────────────
   function logEvent(name, detail = {}) {
@@ -273,11 +272,9 @@
   // ── Expose viewer to inline onclick handlers ──────────────────────────────────
   window.viewer = viewer;
 
-  // ── Initial load ─────────────────────────────────────────────────────────────
-  viewer.images = frames;
-  viewer.frame  = 1;
+  // ── Initial state ─────────────────────────────────────────────────────────────
   viewer.speed  = 100;
-  status.textContent = '✓ Loaded — drag to rotate, double-click or use zoom buttons to zoom.';
+  status.textContent = 'Paste image URLs below or upload local files to get started.';
 </script>
 
 </body>
