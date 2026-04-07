@@ -1008,6 +1008,10 @@ export class Viewer360Element extends HTMLElement implements Viewer360ElementInt
 
     // ── Mouse drag ────────────────────────────────────────────────────────
     this.addEventListener('mousedown', (e: MouseEvent) => {
+      // Ignore clicks that originate on a button inside the shadow DOM.
+      // Without this, clicking the play button triggers mousedown → stopAutoRotate()
+      // before the button's click handler runs, causing an instant re-start.
+      if (e.composedPath().some(el => (el as Element).tagName === 'BUTTON')) return;
       this._isDragging = true;
       this._dragLastX  = e.clientX;
       this._dragLastY  = e.clientY;
@@ -1049,6 +1053,8 @@ export class Viewer360Element extends HTMLElement implements Viewer360ElementInt
 
     // ── Touch ─────────────────────────────────────────────────────────────
     this.addEventListener('touchstart', (e: TouchEvent) => {
+      // Ignore touches that start on a button
+      if (e.composedPath().some(el => (el as Element).tagName === 'BUTTON')) return;
       this._touchDirection = null;
       if (e.touches.length === 2) {
         this._isPinching = true;
@@ -1130,8 +1136,9 @@ export class Viewer360Element extends HTMLElement implements Viewer360ElementInt
 
     // ── Control bar buttons ───────────────────────────────────────────────
     this._playBtn?.addEventListener('click',  () => this._isPlaying ? this._stopAutoRotate() : this._startAutoRotate());
-    this._leftBtn?.addEventListener('click',  () => { this._stopAutoRotate(); this._rotateLeft();  });
-    this._rightBtn?.addEventListener('click', () => { this._stopAutoRotate(); this._rotateRight(); });
+    // Disable rotation buttons when zoomed in — dragging pans instead of rotating at scale > 1
+    this._leftBtn?.addEventListener('click',  () => { if (this._currentScale > 1) return; this._stopAutoRotate(); this._rotateLeft();  });
+    this._rightBtn?.addEventListener('click', () => { if (this._currentScale > 1) return; this._stopAutoRotate(); this._rotateRight(); });
     this._zoomInBtn?.addEventListener('click',  () => this._cycleZoomForward());
     this._zoomOutBtn?.addEventListener('click', () => this._zoomOutStep());
 
