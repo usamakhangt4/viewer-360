@@ -287,7 +287,7 @@ Shortcuts are disabled when focus is inside a form element.
 
 ## Browser support
 
-Any browser that supports [Custom Elements v1](https://caniuse.com/custom-elementsv1) and [Shadow DOM v1](https://caniuse.com/shadowdomv1):
+Any browser that supports [Custom Elements v1](https://caniuse.com/?search=custom-elementsv1) and [Shadow DOM v1](https://caniuse.com/?search=shadowdomv1):
 
 - Chrome / Edge 67+
 - Firefox 63+
