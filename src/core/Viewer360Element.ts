@@ -887,6 +887,8 @@ export class Viewer360Element extends HTMLElement implements Viewer360ElementInt
     this._cancelScheduledRender();
     this._scheduleRender();
     this._updateZoomButtons();
+    // Show/hide rotation controls based on zoom level
+    this.classList.toggle('zoomed', this._currentScale > 1);
 
     if (this._currentScale > 1 && !this._isPinching) {
       this._loadHighResFrame(this._currentFrame);

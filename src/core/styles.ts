@@ -227,6 +227,13 @@ export const STYLES = /* css */ `
   pointer-events: none;
 }
 
+/* Hide rotation controls while zoomed in — top-right cluster remains accessible */
+:host(.zoomed) .viewer-controls {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(8px);
+}
+
 .viewer-controls button {
   flex-shrink: 0;
   min-width: var(--viewer-control-size);
